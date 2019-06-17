@@ -16,7 +16,7 @@
 #include <string>
 #include <fstream>
 #include "helpers.h"
-// #include "debugging_helpers.cpp"
+#include "debugging_helpers.h"
 
 using namespace std;
 
@@ -33,10 +33,22 @@ using namespace std;
     	   all probabilities is equal to one.
 */
 vector< vector<float> > normalize(vector< vector <float> > grid) {
-	
-	vector< vector<float> > newGrid;
+	int numRow = grid.size();
+	int numCol = grid[0].size();
+	float sum = 0;
+	vector< vector<float> > newGrid(numRow, vector<float>(numCol, 0));
 
-	// todo - your code here
+	for (int i = 0; i < numRow; i++) {
+		for (int j = 0; j < numCol; j++) {
+			sum += grid[i][j];
+		}
+	}
+
+	for (int i = 0; i < numRow; i++) {
+		for (int j = 0; j < numCol; j++) {
+			newGrid[i][j] = grid[i][j] / sum;
+		}
+	}
 
 	return newGrid;
 }
@@ -75,11 +87,35 @@ vector< vector<float> > normalize(vector< vector <float> > grid) {
     	   has been blurred.
 */
 vector < vector <float> > blur(vector < vector < float> > grid, float blurring) {
+	int numRow = grid.size();
+	int numCol = grid[0].size();
 
-	vector < vector <float> > newGrid;
+	vector < vector <float> > newGrid(numRow, vector<float>(numCol, 0));
+
+	float center = 1 - blurring;
+	float adjacent = blurring / 6;
+	float corner = blurring / 12;
 	
-	// your code here
+	vector<vector<float>> blurMatrix = {
+		{corner, adjacent, corner},
+		{adjacent, center, adjacent},
+		{corner, adjacent, corner}
+	};
 
+	for (int i = 0; i < numRow; i++) {
+		for (int j = 0; j < numCol; j++) {
+			float value = grid[i][j];
+			for (int di = -1; di <= 1; di++) {
+				for (int dj = -1; dj <= 1; dj++) {
+					float scale = blurMatrix[di + 1][dj + 1];
+					newGrid[(i + di + numRow) % numRow][(j + dj + numCol) % numCol] += value * scale;
+				}
+			}
+		}
+	}
+	
+	// show_grid(newGrid);
+	// cout << center << " " << adjacent << ' ' << corner << endl;
 	return normalize(newGrid);
 }
 
